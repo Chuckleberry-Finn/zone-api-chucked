@@ -1,0 +1,13 @@
+version=1
+title=Chuck-Template
+description=[h2]Brief 1 sentence description.[/h2]
+description=[h3]Commissioned by [b]client name[/b][/h3]
+description=
+description=
+description=[url=https://ko-fi.com/chuckleberryfinn][img]https://raw.githubusercontent.com/ChuckTheSheep/chuckImages/main/kofi.png[/img][/url]
+description=
+description=[url=https://discord.gg/SReMnbV4V7][img]https://raw.githubusercontent.com/Chuckleberry-Finn/chuckImages/main/PZmodCommBanner1.png[/img][/url]
+description=
+description=[h3]Copyright 2023 Chuckleberry Finn. This item is not authorized for posting on Steam, except under the Steam account named Chuckleberry Finn.[/h3]
+tags=Build 41;
+visibility=unlisted

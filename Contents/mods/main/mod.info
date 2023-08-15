@@ -1,6 +1,6 @@
-id=ChuckTemplate
-name=ChuckTemplate
-description= 
+id=ZoneAPIChucked
+name=Zone API Chucked
+description=An API (utility mod) that allows modders to make use of 'zones' that admins can modify on the fly.
 poster=poster.png
 tags=Build 41
 versionMin=41.0

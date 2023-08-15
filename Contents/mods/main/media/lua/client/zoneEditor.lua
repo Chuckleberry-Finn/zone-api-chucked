@@ -134,6 +134,10 @@ zoneEditor.ignore = {}
 zoneEditor.zoneTypes = {}
 function zoneEditor.addZoneType(fileName)
     local newZoneModule = require(fileName)
+
+    if not newZoneModule.Zone then print("ERROR: ZoneType derived from: \"..fileName..\".lua\" has no 'Zone'.") return end
+    if not newZoneModule.Zone.coordinates then print("ERROR: ZoneType derived from: \"..fileName..\".lua\" has no 'coordinates'.") return end
+
     if newZoneModule.ignore then
         for k,v in pairs(newZoneModule.ignore) do
             zoneEditor.ignore[k] = v

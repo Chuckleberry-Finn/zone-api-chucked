@@ -188,11 +188,13 @@ end
 
 
 function zoneEditor.receiveGlobalModData(name, data)
-    local selected = self:getSelectedZoneType()
-    if not selected then return end
-    if name == selected.."_zones" then
-        ModData.remove(selected.."_zones")
-        ModData.add(selected.."_zones",data)
+    if zoneEditor.instance then
+        local selected = zoneEditor.instance:getSelectedZoneType()
+        if not selected then return end
+        if name == selected.."_zones" then
+            ModData.remove(selected.."_zones")
+            ModData.add(selected.."_zones",data)
+        end
     end
 end
 Events.OnReceiveGlobalModData.Add(zoneEditor.receiveGlobalModData)

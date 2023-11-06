@@ -343,7 +343,7 @@ function zoneEditor:onEnterValueEntry()
         end
     end
 
-    ModData.transmit(self.selectionComboBox:getOptionData(self.selectionComboBox.selected).."_zones")
+    ModData.transmit(zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected).."_zones")
 
     zoneEditor.instance.zoneEditPanel.clickSelected = nil
     self:setVisible(false)

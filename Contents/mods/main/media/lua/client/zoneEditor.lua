@@ -19,7 +19,7 @@ function zoneEditor.OnOpenPanel(obj, name)
     zoneEditor.instance:setVisible(true)
 
     if isClient() then
-        zoneEditor.instance.zones = ModData.request(self.selectionComboBox:getOptionData(self.selectionComboBox.selected).."_zones")
+        zoneEditor.instance.zones = ModData.request(zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected).."_zones")
     end
 
     zoneEditor.instance:populateZoneList()
@@ -188,7 +188,7 @@ end
 
 
 function zoneEditor.receiveGlobalModData(name, data)
-    if zoneEditor.instance then
+    if zoneEditor.instance and name and data and type(data) == "table"then
         local selected = zoneEditor.instance:getSelectedZoneType()
         if not selected then return end
         if name == selected.."_zones" then

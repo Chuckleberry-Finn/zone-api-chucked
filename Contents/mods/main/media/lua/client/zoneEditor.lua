@@ -9,7 +9,6 @@ function zoneEditor.OnOpenPanel(obj, name)
     if not isAdmin() and not isCoopHost() and not getDebug() then return end
 
     if zoneEditor.instance==nil then
-
         zoneEditor.instance = zoneEditor:new(100, 100, 650, 475, "Inspect")
         zoneEditor.instance:initialise()
         zoneEditor.instance:instantiate()
@@ -19,7 +18,12 @@ function zoneEditor.OnOpenPanel(obj, name)
     zoneEditor.instance:setVisible(true)
 
     if isClient() then
-        zoneEditor.instance.zones = ModData.request(zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected).."_zones")
+        local dataID = zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected)
+        if dataID then
+            zoneEditor.instance.zones = ModData.request(dataID.."_zones")
+        else
+            print("WARN: ZoneEditor tried to get invalid selection.")
+        end
     end
 
     zoneEditor.instance:populateZoneList()

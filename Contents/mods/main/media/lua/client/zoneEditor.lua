@@ -5,6 +5,18 @@ zoneEditor.instance = nil
 zoneEditor.dataListObj = {}
 zoneEditor.dataListName = {}
 
+--[[
+function zoneEditor.initGlobalModData(isNewGame)
+    if isClient() then
+        for zoneID, zoneData in pairs(zoneEditor.zoneTypes) do
+            if ModData.exists(zoneID.."_zones") then ModData.remove(zoneID.."_zones") end
+            ModData.request(zoneID.."_zones")
+        end
+    end
+end
+Events.OnInitGlobalModData.Add(zoneEditor.initGlobalModData)
+--]]
+
 function zoneEditor.OnOpenPanel(obj, name)
     if not isAdmin() and not isCoopHost() and not getDebug() then return end
 
@@ -192,7 +204,7 @@ end
 
 
 function zoneEditor.receiveGlobalModData(name, data)
-    if zoneEditor.instance and name and data and type(data) == "table"then
+    if zoneEditor.instance and name and data and type(data) == "table" then
         local selected = zoneEditor.instance:getSelectedZoneType()
         if not selected then return end
         if name == selected.."_zones" then

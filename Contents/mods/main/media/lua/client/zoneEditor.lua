@@ -5,17 +5,14 @@ zoneEditor.instance = nil
 zoneEditor.dataListObj = {}
 zoneEditor.dataListName = {}
 
---[[
-function zoneEditor.initGlobalModData(isNewGame)
+function zoneEditor.requestZone(zoneID)
     if isClient() then
-        for zoneID, zoneData in pairs(zoneEditor.zoneTypes) do
-            if ModData.exists(zoneID.."_zones") then ModData.remove(zoneID.."_zones") end
-            ModData.request(zoneID.."_zones")
-        end
+        ModData.request(zoneID.."_zones")
+        return
     end
+
+    return zoneEditor.zoneTypes[zoneID]
 end
-Events.OnInitGlobalModData.Add(zoneEditor.initGlobalModData)
---]]
 
 function zoneEditor.OnOpenPanel(obj, name)
     if not isAdmin() and not isCoopHost() and not getDebug() then return end

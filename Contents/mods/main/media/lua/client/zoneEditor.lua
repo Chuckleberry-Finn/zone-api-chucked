@@ -61,6 +61,9 @@ function zoneEditor:createChildren()
     self.junk, self.header = ISDebugUtils.addLabel(self, {}, 15, 8, "Zone Editor", UIFont.Large, true)
     self.header:setColor(0.9,0.9,0.9)
 
+    self.junk, self.playerCoords = ISDebugUtils.addLabel(self, {}, self.header.x+self.header.width+20, 8, "", UIFont.Small, true)
+    self.header:setColor(0.8,0.8,0.8)
+
     local comboWidth = self.width/3
     self.selectionComboBox = ISComboBox:new(self.width-comboWidth-8, 8, comboWidth, 22, self, self.onSelectZoneTypeChange)
     self.selectionComboBox.borderColor = { r = 1, g = 1, b = 1, a = 0.4 }
@@ -407,6 +410,29 @@ function zoneEditor:onMouseWheel(del)
 end
 
 
+---@param playerObj IsoGameCharacter|IsoPlayer|IsoObject|IsoMovingObject
+function zoneEditor.highlightZone(x1,y1,x2,y2,playerObj)
+    for xVal = x1, x2 do
+        for yVal = y1, y2 do
+            if xVal == x1 or xVal == x2 or yVal == y1 or yVal == y2 then
+                ---@type IsoGridSquare
+                local square = getSquare(xVal,yVal,0)
+                ---@type IsoObject
+                local sqFloor = square and square:getFloor()
+
+                if sqFloor then
+                    local tooFar = (math.abs(playerObj:getX()-sqFloor:getX())>25) or (math.abs(playerObj:getX()-sqFloor:getX())>25)
+                    if not tooFar then
+                        sqFloor:setHighlighted(true)
+                        sqFloor:setHighlightColor(1,0,0,1)
+                    end
+                end
+            end
+        end
+    end
+end
+
+
 function zoneEditor:prerender()
     ISPanel.prerender(self)
 
@@ -436,11 +462,15 @@ function zoneEditor:prerender()
         end
     end
 
+    local player = getPlayer()
+
     if self.zones then
         for i, zone in pairs(self.zones) do
             if zone and zone.coordinates and zone.coordinates.x1 then
                 local zoneW, zoneH = scale*(math.abs(zone.coordinates.x2-zone.coordinates.x1)/mapSizeX), scale*(math.abs(zone.coordinates.y2-zone.coordinates.y1)/mapSizeY)
                 local zoneX, zoneY = zoneMapX+scale*(zone.coordinates.x1/mapSizeX), zoneMapY+scale*(zone.coordinates.y1/mapSizeY)
+
+                zoneEditor.highlightZone(zone.coordinates.x1,zone.coordinates.y1,zone.coordinates.x2,zone.coordinates.y2,player)
 
                 self:drawRect(zoneX, zoneY, math.max(1,zoneW), math.max(1,zoneH), 0.5, 1, 0, 0)
 
@@ -451,9 +481,10 @@ function zoneEditor:prerender()
         end
     end
 
-    local player = getPlayer()
     local playerX, playerY = zoneMapX+scale*(player:getX()/mapSizeX), zoneMapY+scale*(player:getY()/mapSizeY)
     self:drawRect(playerX, playerY, math.max(1,1), math.max(1,1), 0.7, 0, 1, 0)
+
+    self.playerCoords:setName("x:"..tostring(player:getX())..", y:"..tostring(player:getY()))
 
     self:drawRectBorder(zoneMapX, zoneMapY, scale, scale, 0.7, 0.7, 0.7, 0.7)
 end

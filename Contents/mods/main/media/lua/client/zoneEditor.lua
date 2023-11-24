@@ -9,7 +9,6 @@ zoneEditor.dataListName = {}
 function zoneEditor.init(isNewGame)
     if isClient() then
         for zoneID,zoneData in pairs(zoneEditor.zoneTypes) do
-            ModData.remove(zoneID.."_zones")
             ModData.request(zoneID.."_zones")
         end
     end
@@ -17,7 +16,10 @@ end
 Events.OnInitGlobalModData.Add(zoneEditor.init)
 
 
-function zoneEditor.requestZone(zoneID) return ModData.getOrCreate(zoneID.."_zones") end
+function zoneEditor.requestZone(zoneID)
+    if isClient() then ModData.request(zoneID.."_zones") end
+    return ModData.getOrCreate(zoneID.."_zones")
+end
 
 
 function zoneEditor.OnOpenPanel(obj, name)
@@ -35,7 +37,8 @@ function zoneEditor.OnOpenPanel(obj, name)
     if isClient() then
         local dataID = zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected)
         if dataID then
-            zoneEditor.instance.zones = ModData.request(dataID.."_zones")
+            ModData.request(dataID.."_zones")
+            zoneEditor.instance.zones = ModData.getOrCreate(dataID.."_zones")
         else
             print("WARN: ZoneEditor tried to get invalid selection.")
         end
@@ -163,6 +166,8 @@ function zoneEditor.addZoneType(fileName)
         end
     end
     zoneEditor.zoneTypes[fileName]=newZoneModule
+
+    sendClientCommand("zoneEditor", "addZoneTypeToServer", {zoneType=fileName})
 end
 
 

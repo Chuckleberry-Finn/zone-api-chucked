@@ -6,19 +6,9 @@ zoneEditor.dataListObj = {}
 zoneEditor.dataListName = {}
 
 
-function zoneEditor.init(isNewGame)
-    if isClient() then
-        for zoneID,zoneData in pairs(zoneEditor.zoneTypes) do
-            ModData.request(zoneID.."_zones")
-        end
-    end
-end
-Events.OnInitGlobalModData.Add(zoneEditor.init)
-
-
 function zoneEditor.requestZone(zoneID)
     if isClient() then ModData.request(zoneID.."_zones") end
-    return ModData.getOrCreate(zoneID.."_zones")
+    return ModData.get(zoneID.."_zones")
 end
 
 
@@ -33,17 +23,6 @@ function zoneEditor.OnOpenPanel(obj, name)
 
     zoneEditor.instance:addToUIManager()
     zoneEditor.instance:setVisible(true)
-
-    if isClient() then
-        local dataID = zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected)
-        if dataID then
-            ModData.request(dataID.."_zones")
-            zoneEditor.instance.zones = ModData.getOrCreate(dataID.."_zones")
-        else
-            print("WARN: ZoneEditor tried to get invalid selection.")
-        end
-    end
-
     zoneEditor.instance:populateZoneList()
 
     return zoneEditor.instance
@@ -56,9 +35,7 @@ function zoneEditor:initialise()
 end
 
 
-function zoneEditor:supplantMouseWheel(del)
-    self.parent:onMouseWheel(del)
-end
+function zoneEditor:supplantMouseWheel(del) self.parent:onMouseWheel(del) end
 
 
 function zoneEditor:getSelectedZoneType()
@@ -232,7 +209,7 @@ function zoneEditor:populateZoneList(selectedBackup)
     local selected = self:getSelectedZoneType()
     if not selected then return end
 
-    self.zones = ModData.getOrCreate(selected.."_zones")
+    self.zones = ModData.get(selected.."_zones")
 
     if self.zones then
         if selectedBackup then self.zoneList.selected = selectedBackup end

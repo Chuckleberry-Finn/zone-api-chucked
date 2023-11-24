@@ -412,6 +412,21 @@ end
 
 ---@param playerObj IsoGameCharacter|IsoPlayer|IsoObject|IsoMovingObject
 function zoneEditor.highlightZone(x1,y1,x2,y2,playerObj)
+
+    --[[
+    for xVal = _x1, _x2 do
+        local yVal1 = _y1;
+        local yVal2 = _y2;
+        local sqObj1 = getCell():getOrCreateGridSquare(xVal,yVal1,0);
+        local sqObj2 = getCell():getOrCreateGridSquare(xVal,yVal2,0);
+
+    for yVal = _y1, _y2 do
+        local xVal1 = _x1;
+        local xVal2 = _x2;
+        local sqObj1 = getCell():getOrCreateGridSquare(xVal1,yVal,0);
+        local sqObj2 = getCell():getOrCreateGridSquare(xVal2,yVal,0);
+    --]]
+
     for xVal = x1, x2 do
         for yVal = y1, y2 do
             if xVal == x1 or xVal == x2 or yVal == y1 or yVal == y2 then

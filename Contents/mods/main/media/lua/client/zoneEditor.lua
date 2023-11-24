@@ -421,7 +421,7 @@ function zoneEditor.highlightZone(x1,y1,x2,y2,playerObj)
                 local sqFloor = square and square:getFloor()
 
                 if sqFloor then
-                    local tooFar = (math.abs(playerObj:getX()-sqFloor:getX())>25) or (math.abs(playerObj:getX()-sqFloor:getX())>25)
+                    local tooFar = (math.abs(playerObj:getX()-sqFloor:getX())>10) or (math.abs(playerObj:getX()-sqFloor:getX())>10)
                     if not tooFar then
                         sqFloor:setHighlighted(true)
                         sqFloor:setHighlightColor(1,0,0,1)
@@ -470,7 +470,7 @@ function zoneEditor:prerender()
                 local zoneW, zoneH = scale*(math.abs(zone.coordinates.x2-zone.coordinates.x1)/mapSizeX), scale*(math.abs(zone.coordinates.y2-zone.coordinates.y1)/mapSizeY)
                 local zoneX, zoneY = zoneMapX+scale*(zone.coordinates.x1/mapSizeX), zoneMapY+scale*(zone.coordinates.y1/mapSizeY)
 
-                zoneEditor.highlightZone(zone.coordinates.x1,zone.coordinates.y1,zone.coordinates.x2,zone.coordinates.y2,player)
+                --zoneEditor.highlightZone(zone.coordinates.x1,zone.coordinates.y1,zone.coordinates.x2,zone.coordinates.y2,player)
 
                 self:drawRect(zoneX, zoneY, math.max(1,zoneW), math.max(1,zoneH), 0.5, 1, 0, 0)
 

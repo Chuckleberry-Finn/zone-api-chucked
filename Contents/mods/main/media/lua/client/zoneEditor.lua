@@ -160,7 +160,10 @@ function zoneEditor:onClickAddZone()
     local selected = self:getSelectedZoneType()
     if not selected then return end
     local zoneType = zoneEditor.zoneTypes[selected]
+    if not zoneType then return end
     local newZone = copyTable(zoneType.Zone)
+    if not newZone then return end
+    if not self.zones then return end
     table.insert(self.zones, newZone)
     ModData.transmit(selected.."_zones")
     self.refresh = 2
@@ -212,7 +215,9 @@ function zoneEditor:populateZoneList(selectedBackup)
     local selected = self:getSelectedZoneType()
     if not selected then return end
 
-    self.zones = ModData.get(selected.."_zones")
+    if isClient() then ModData.request(selected.."_zones") end
+
+    self.zones = ModData.getOrCreate(selected.."_zones")
 
     if self.zones then
         if selectedBackup then self.zoneList.selected = selectedBackup end

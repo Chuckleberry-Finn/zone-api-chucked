@@ -192,16 +192,16 @@ end
 
 
 function zoneEditor.receiveGlobalModData(name, data)
-    if zoneEditor.instance and name and data and type(data) == "table" then
-        local selected = zoneEditor.instance:getSelectedZoneType()
-        if not selected then return end
-        if name == selected.."_zones" then
-            ModData.remove(selected.."_zones")
-            ModData.add(selected.."_zones",data)
+    if name and data and type(data) == "table" then
+        if zoneEditor.zoneTypes[name] and data and type(data) == "table" then
+            local modDataID = name.."_zones"
+            if ModData.exists(modDataID) then ModData.remove(modDataID) end
+            ModData.add(modDataID,data)
         end
     end
 end
 Events.OnReceiveGlobalModData.Add(zoneEditor.receiveGlobalModData)
+
 
 function zoneEditor:populateZoneList(selectedBackup)
     self.zoneList:clear()
@@ -358,17 +358,12 @@ end
 function zoneEditor:drawZoneList(y, item, alt)
     local a = 0.9
     local itemHeight = self.itemheight
-
     local zoneEditPanelH = 0
 
     if self.selected == item.index then
         itemHeight = ((self.fontHgt + (self.itemPadY or 0) * 2))
 
-        --zoneEditPanelH = itemHeight-30
-        --if self.parent.zoneEditPanel.clickSelected then
         zoneEditPanelH = self.parent.zoneEditPanel.itemheight*self.parent.zoneEditPanel.count
-        --end
-
         itemHeight = itemHeight + (zoneEditPanelH)
 
         self:drawRect(0, (y), self:getWidth(), (itemHeight-1), 0.3, 0.7, 0.35, 0.15)
@@ -410,40 +405,38 @@ function zoneEditor:onMouseWheel(del)
 end
 
 
+---@param square IsoGridSquare
+function zoneEditor.highlightSquare(square, player)
+    ---@type IsoObject
+    local sqFloor = square and square:getFloor()
+    if not sqFloor then return end
+    local tooFar = (math.abs(player:getX()-sqFloor:getX())>55) or (math.abs(player:getX()-sqFloor:getX())>55)
+    if tooFar then return end
+    sqFloor:setHighlighted(true)
+    sqFloor:setHighlightColor(1,0,0,1)
+end
+
+
 ---@param playerObj IsoGameCharacter|IsoPlayer|IsoObject|IsoMovingObject
 function zoneEditor.highlightZone(x1,y1,x2,y2,playerObj)
 
-    --[[
-    for xVal = _x1, _x2 do
-        local yVal1 = _y1;
-        local yVal2 = _y2;
-        local sqObj1 = getCell():getOrCreateGridSquare(xVal,yVal1,0);
-        local sqObj2 = getCell():getOrCreateGridSquare(xVal,yVal2,0);
-
-    for yVal = _y1, _y2 do
-        local xVal1 = _x1;
-        local xVal2 = _x2;
-        local sqObj1 = getCell():getOrCreateGridSquare(xVal1,yVal,0);
-        local sqObj2 = getCell():getOrCreateGridSquare(xVal2,yVal,0);
-    --]]
-
     for xVal = x1, x2 do
-        for yVal = y1, y2 do
-            if xVal == x1 or xVal == x2 or yVal == y1 or yVal == y2 then
-                ---@type IsoGridSquare
-                local square = getSquare(xVal,yVal,0)
-                ---@type IsoObject
-                local sqFloor = square and square:getFloor()
+        local yVal1 = y1
+        local yVal2 = y2
+        local square1 = getSquare(xVal,yVal1,0)
+        zoneEditor.highlightSquare(square1, playerObj)
+        local square2 = getSquare(xVal,yVal2,0)
+        zoneEditor.highlightSquare(square2, playerObj)
 
-                if sqFloor then
-                    local tooFar = (math.abs(playerObj:getX()-sqFloor:getX())>10) or (math.abs(playerObj:getX()-sqFloor:getX())>10)
-                    if not tooFar then
-                        sqFloor:setHighlighted(true)
-                        sqFloor:setHighlightColor(1,0,0,1)
-                    end
-                end
-            end
-        end
+    end
+
+    for yVal = y1, y2 do
+        local xVal1 = x1
+        local xVal2 = x2
+        local square1 = getSquare(xVal1,yVal,0)
+        zoneEditor.highlightSquare(square1, playerObj)
+        local square2 = getSquare(xVal2,yVal,0)
+        zoneEditor.highlightSquare(square2, playerObj)
     end
 end
 
@@ -485,8 +478,6 @@ function zoneEditor:prerender()
                 local zoneW, zoneH = scale*(math.abs(zone.coordinates.x2-zone.coordinates.x1)/mapSizeX), scale*(math.abs(zone.coordinates.y2-zone.coordinates.y1)/mapSizeY)
                 local zoneX, zoneY = zoneMapX+scale*(zone.coordinates.x1/mapSizeX), zoneMapY+scale*(zone.coordinates.y1/mapSizeY)
 
-                --zoneEditor.highlightZone(zone.coordinates.x1,zone.coordinates.y1,zone.coordinates.x2,zone.coordinates.y2,player)
-
                 self:drawRect(zoneX, zoneY, math.max(1,zoneW), math.max(1,zoneH), 0.5, 1, 0, 0)
 
                 if self.zoneList.items and self.zoneList.items[self.zoneList.selected] and self.zoneList.items[self.zoneList.selected].item == zone then
@@ -507,6 +498,15 @@ end
 
 function zoneEditor:render()
     ISPanel.render(self)
+    
+    if self.zones then
+        local player = getPlayer()
+        for i, zone in pairs(self.zones) do
+            if zone and zone.coordinates and zone.coordinates.x1 then
+                zoneEditor.highlightZone(zone.coordinates.x1,zone.coordinates.y1,zone.coordinates.x2,zone.coordinates.y2,player)
+            end
+        end
+    end
 end
 
 function zoneEditor:update()

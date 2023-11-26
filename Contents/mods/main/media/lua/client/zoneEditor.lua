@@ -134,9 +134,11 @@ function zoneEditor:onClickClose() self:close() end
 
 zoneEditor.ignore = {}
 zoneEditor.zoneTypes = {}
+
 function zoneEditor.addZoneType(fileName)
     local newZoneModule = require(fileName)
 
+    if not newZoneModule then print("ERROR: ZoneType derived from: \"..fileName..\".lua\" is returning nil.") return end
     if not newZoneModule.Zone then print("ERROR: ZoneType derived from: \"..fileName..\".lua\" has no 'Zone'.") return end
     if not newZoneModule.Zone.coordinates then print("ERROR: ZoneType derived from: \"..fileName..\".lua\" has no 'coordinates'.") return end
 
@@ -168,6 +170,7 @@ function zoneEditor:onClickAddZone()
     ModData.transmit(selected.."_zones")
     self.refresh = 2
 end
+
 
 function zoneEditor:onClickRemoveZone()
     if not self.zones then return end
@@ -244,6 +247,9 @@ function zoneEditor:populateZoneEditPanel()
 
         self.zoneEditPanel.additionalSublistRows = 0
 
+        local selected = self:getSelectedZoneType()
+        local tooltips = self.zoneTypes[selected] and self.zoneTypes[selected].tooltips
+
         for param, value in pairs(zone) do
             if not zoneEditor.ignore[param] then
 
@@ -267,6 +273,8 @@ function zoneEditor:populateZoneEditPanel()
 
                 local option = self.zoneEditPanel:addItem(param..labelValue, param)
                 option.isTable = valueIsTable
+
+                option.tooltip = tooltips[param] or nil
 
                 if self.zoneEditPanel.openedSublist[param] then
                     if valueIsTable then

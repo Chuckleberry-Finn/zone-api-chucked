@@ -20,6 +20,8 @@ exampleZoneType.Zone = {
     ignoreExample = {"a", "b"},
 }
 
+exampleZoneType.tooltips = nil --{coordinates="These are coordinates."}
+
 --All keys have to equal true (or another non-false/nil value - if you want to utilize the value for something outside of the ZoneEditor)
 exampleZoneType.ignore = {["ignoreExample"]=true}
 

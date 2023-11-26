@@ -274,7 +274,7 @@ function zoneEditor:populateZoneEditPanel()
                 local option = self.zoneEditPanel:addItem(param..labelValue, param)
                 option.isTable = valueIsTable
 
-                option.tooltip = tooltips[param] or nil
+                option.tooltip = tooltips and tooltips[param] or nil
 
                 if self.zoneEditPanel.openedSublist[param] then
                     if valueIsTable then

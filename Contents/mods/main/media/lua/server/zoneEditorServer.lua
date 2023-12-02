@@ -19,6 +19,7 @@ function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
     if _command == "addZoneTypeToServer" then
         zoneEditorServer.zoneTypes[_data.zoneType] = true
         if not ModData.exists(_data.zoneType.."_zones") then ModData.getOrCreate(_data.zoneType.."_zones") end
+        ModData.transmit(_data.zoneType.."_zones", {})
     end
 end
 --sendClientCommand("zoneEditor", "addZoneTypeToServer", {zoneType=""})

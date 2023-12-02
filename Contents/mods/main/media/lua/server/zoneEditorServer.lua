@@ -6,7 +6,7 @@ function zoneEditorServer.receiveGlobalModData(name, data)
     if zoneEditorServer.zoneTypes[name] and data and type(data) == "table" then
         local modDataID = name.."_zones"
         if ModData.exists(modDataID) then ModData.remove(modDataID) end
-        ModData.getOrCreate(modDataID.."_zones")
+        ModData.add(modDataID.."_zones", data)
         ModData.transmit(modDataID,data)
     end
 end

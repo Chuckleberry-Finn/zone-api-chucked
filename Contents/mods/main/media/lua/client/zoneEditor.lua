@@ -148,8 +148,6 @@ function zoneEditor.addZoneType(fileName)
         end
     end
     zoneEditor.zoneTypes[fileName]=newZoneModule
-
-    sendClientCommand("zoneEditor", "addZoneTypeToServer", {zoneType=fileName})
 end
 
 
@@ -202,7 +200,8 @@ function zoneEditor.receiveGlobalModData(name, data)
         if zoneEditor.zoneTypes[name] and data and type(data) == "table" then
             local modDataID = name.."_zones"
             if ModData.exists(modDataID) then ModData.remove(modDataID) end
-            ModData.add(modDataID,data)
+            local modData = ModData.getOrCreate(modDataID)
+            ModData.add(modData, data)
         end
     end
 end
@@ -361,7 +360,6 @@ function zoneEditor:onEnterValueEntry()
     end
 
     ModData.transmit(zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected).."_zones")
-
     zoneEditor.instance.zoneEditPanel.clickSelected = nil
     self:setVisible(false)
     zoneEditor.instance:populateZoneEditPanel()

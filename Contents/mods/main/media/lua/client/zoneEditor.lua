@@ -7,8 +7,8 @@ zoneEditor.dataListName = {}
 
 
 function zoneEditor.requestZone(zoneID)
-    if isClient() then ModData.request(zoneID.."_zones") end
-    return ModData.get(zoneID.."_zones")
+    local modDataID = zoneID.."_zones"
+    if ModData.exists(modDataID) then return ModData.get(modDataID) end
 end
 
 
@@ -150,6 +150,12 @@ function zoneEditor.addZoneType(fileName)
     zoneEditor.zoneTypes[fileName]=newZoneModule
 end
 
+function zoneEditor.addZoneTypes()
+    local types = {}
+    for zoneType,zoneData in pairs(zoneEditor.zoneTypes) do table.insert(types, zoneType) end
+    sendClientCommand("zoneEditor", "addZoneTypesToServer", {zoneTypes=types})
+end
+Events.OnGameBoot.Add(zoneEditor.addZoneTypes)
 
 function zoneEditor:onSelectZoneTypeChange()
     self:populateZoneList()
@@ -218,8 +224,7 @@ function zoneEditor:populateZoneList(selectedBackup)
     if not selected then return end
 
     if isClient() then ModData.request(selected.."_zones") end
-
-    self.zones = ModData.getOrCreate(selected.."_zones")
+    self.zones = ModData.get(selected.."_zones")
 
     if self.zones then
         if selectedBackup then self.zoneList.selected = selectedBackup end
@@ -359,7 +364,9 @@ function zoneEditor:onEnterValueEntry()
         end
     end
 
+    print("transmitCheck-a")
     ModData.transmit(zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected).."_zones")
+    print("transmitCheck-b")
     zoneEditor.instance.zoneEditPanel.clickSelected = nil
     self:setVisible(false)
     zoneEditor.instance:populateZoneEditPanel()

@@ -152,10 +152,13 @@ end
 
 function zoneEditor.addZoneTypes()
     local types = {}
-    for zoneType,zoneData in pairs(zoneEditor.zoneTypes) do table.insert(types, zoneType) end
+    for zoneType,zoneData in pairs(zoneEditor.zoneTypes) do
+        table.insert(types, zoneType)
+        ModData.getOrCreate(zoneType.."_zones")
+    end
     sendClientCommand("zoneEditor", "addZoneTypesToServer", {zoneTypes=types})
 end
-Events.OnGameBoot.Add(zoneEditor.addZoneTypes)
+Events.OnLoad.Add(zoneEditor.addZoneTypes)
 
 function zoneEditor:onSelectZoneTypeChange()
     self:populateZoneList()
@@ -171,7 +174,7 @@ function zoneEditor:onClickAddZone()
     if not newZone then return end
     if not self.zones then return end
     table.insert(self.zones, newZone)
-    ModData.transmit(selected.."_zones")
+    sendClientCommand("zoneEditor", "sendZoneData", {zoneType=selected,zones=self.zones})
     self.refresh = 2
 end
 
@@ -180,13 +183,9 @@ function zoneEditor:onClickRemoveZone()
     if not self.zones then return end
     local selected = self:getSelectedZoneType()
     if not selected then return end
-    for i, zone in pairs(self.zones) do
-        if self.zoneList.items[self.zoneList.selected].item == zone then
-            self.zones[i] = nil
-            ModData.transmit(selected.."_zones")
-        end
-    end
-    self:populateZoneList()
+    for i, zone in pairs(self.zones) do if self.zoneList.items[self.zoneList.selected].item == zone then self.zones[i] = nil end end
+    sendClientCommand("zoneEditor", "sendZoneData", {zoneType=selected,zones=self.zones})
+    self.refresh = 2
 end
 
 
@@ -203,11 +202,9 @@ end
 
 function zoneEditor.receiveGlobalModData(name, data)
     if name and data and type(data) == "table" then
-        if zoneEditor.zoneTypes[name] and data and type(data) == "table" then
-            local modDataID = name.."_zones"
-            if ModData.exists(modDataID) then ModData.remove(modDataID) end
-            local modData = ModData.getOrCreate(modDataID)
-            ModData.add(modData, data)
+        local zoneType = name:gsub("_zones", "")
+        if zoneEditor.zoneTypes[zoneType] and data and type(data) == "table" then
+            ModData.add(name, data)
         end
     end
 end
@@ -364,9 +361,8 @@ function zoneEditor:onEnterValueEntry()
         end
     end
 
-    print("transmitCheck-a")
-    ModData.transmit(zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected).."_zones")
-    print("transmitCheck-b")
+    local zoneType = zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected)
+    sendClientCommand("zoneEditor", "sendZoneData", {zoneType=zoneType,zones=self.zones})
     zoneEditor.instance.zoneEditPanel.clickSelected = nil
     self:setVisible(false)
     zoneEditor.instance:populateZoneEditPanel()

@@ -2,9 +2,9 @@ if not isClient() then require "zoneEditor" end
 
 local zoneEditorServer = {}
 
-function zoneEditorServer.pushUpdate(_player, zoneType, zones, disableRefresh)
+function zoneEditorServer.pushUpdate(zoneType, zones, disableRefresh)
     if isServer() then
-        sendServerCommand(_player, "zoneEditor", "loadZone", {zoneType=zoneType, zones=zones, disableRefresh=disableRefresh})
+        sendServerCommand("zoneEditor", "loadZone", {zoneType=zoneType, zones=zones, disableRefresh=disableRefresh})
     else
         zoneEditor.loadedZones[zoneType] = zones
         if (not disableRefresh) and zoneEditor.instance then zoneEditor.instance.refresh = 1 end
@@ -28,7 +28,7 @@ function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
             end
 
             if isServer() then
-                sendServerCommand(_player, "zoneEditor", "loadAll", {loadedZones=chamberedZones})
+                sendServerCommand("zoneEditor", "loadAll", {loadedZones=chamberedZones})
             else
                 zoneEditor.loadedZones = chamberedZones
             end
@@ -40,7 +40,7 @@ function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
         local zoneType = _data.zoneType
         local zones = ModData.getOrCreate(zoneType.."_zones")
         local disableRefresh = _data.disableRefresh
-        zoneEditorServer.pushUpdate(_player, zoneType, zones, disableRefresh)
+        zoneEditorServer.pushUpdate(zoneType, zones, disableRefresh)
     end
 
 
@@ -51,7 +51,7 @@ function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
         local newZone = _data.newZone
 
         table.insert(zones, newZone)
-        zoneEditorServer.pushUpdate(_player, zoneType, zones)
+        zoneEditorServer.pushUpdate(zoneType, zones)
     end
 
 
@@ -60,9 +60,9 @@ function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
         local zoneType = _data.zoneType
         local zones = ModData.getOrCreate(zoneType.."_zones")
         local remove = _data.selected
-
-        zones[remove] = nil
-        zoneEditorServer.pushUpdate(_player, zoneType, zones)
+        print("zoneType: ", zoneType, ",   remove: ",remove)
+        table.remove(zones, remove)
+        zoneEditorServer.pushUpdate(zoneType, zones)
     end
 
     --sendClientCommand("zoneEditor", "editZoneData", {zoneType=zoneType,selected=zoneSelected,parentParam=parentParam,newKey=newKey,newValue=newValue})
@@ -77,7 +77,7 @@ function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
         local modifying = parentParam and selected[parentParam] or selected
         modifying[newKey] = newValue
 
-        zoneEditorServer.pushUpdate(_player, zoneType, zones, true)
+        zoneEditorServer.pushUpdate(zoneType, zones, true)
     end
 end
 

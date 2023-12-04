@@ -7,8 +7,7 @@ zoneEditor.dataListName = {}
 
 
 function zoneEditor.requestZone(zoneID)
-    local modDataID = zoneID.."_zones"
-    if ModData.exists(modDataID) then return ModData.get(modDataID) end
+    sendClientCommand("zoneEditor", "loadZone", {zoneType=zoneID, disableRefresh=true})
 end
 
 
@@ -134,6 +133,8 @@ function zoneEditor:onClickClose() self:close() end
 
 zoneEditor.ignore = {}
 zoneEditor.zoneTypes = {}
+zoneEditor.currentZone = nil
+zoneEditor.loadedZones = {}
 
 function zoneEditor.addZoneType(fileName)
     local newZoneModule = require(fileName)
@@ -150,19 +151,8 @@ function zoneEditor.addZoneType(fileName)
     zoneEditor.zoneTypes[fileName]=newZoneModule
 end
 
-function zoneEditor.addZoneTypes()
-    local types = {}
-    for zoneType,zoneData in pairs(zoneEditor.zoneTypes) do
-        table.insert(types, zoneType)
-        ModData.getOrCreate(zoneType.."_zones")
-    end
-    sendClientCommand("zoneEditor", "addZoneTypesToServer", {zoneTypes=types})
-end
-Events.OnLoad.Add(zoneEditor.addZoneTypes)
 
-function zoneEditor:onSelectZoneTypeChange()
-    self:populateZoneList()
-end
+function zoneEditor:onSelectZoneTypeChange() self:populateZoneList() end
 
 
 function zoneEditor:onClickAddZone()
@@ -172,19 +162,16 @@ function zoneEditor:onClickAddZone()
     if not zoneType then return end
     local newZone = copyTable(zoneType.Zone)
     if not newZone then return end
-    if not self.zones then return end
-    table.insert(self.zones, newZone)
-    sendClientCommand("zoneEditor", "sendZoneData", {zoneType=selected,zones=self.zones})
+    sendClientCommand("zoneEditor", "addZone", {zoneType=selected, newZone=newZone})
     self.refresh = 2
 end
 
 
 function zoneEditor:onClickRemoveZone()
-    if not self.zones then return end
+    if not zoneEditor.currentZone then return end
     local selected = self:getSelectedZoneType()
     if not selected then return end
-    for i, zone in pairs(self.zones) do if self.zoneList.items[self.zoneList.selected].item == zone then self.zones[i] = nil end end
-    sendClientCommand("zoneEditor", "sendZoneData", {zoneType=selected,zones=self.zones})
+    sendClientCommand("zoneEditor", "removeZone", {zoneType=selected,selected=self.zoneList.selected})
     self.refresh = 2
 end
 
@@ -193,22 +180,12 @@ function zoneEditor:OnZoneListMouseDown(item)
     zoneEditor.instance:populateZoneEditPanel()
 end
 
+
 function zoneEditor:OnZoneEditPanelMouseDown(item, test, test2)
     zoneEditor.instance.zoneEditPanel.clickSelected = item
     local backup = zoneEditor.instance.zoneList.selected
     zoneEditor.instance:populateZoneList(backup)
 end
-
-
-function zoneEditor.receiveGlobalModData(name, data)
-    if name and data and type(data) == "table" then
-        local zoneType = name:gsub("_zones", "")
-        if zoneEditor.zoneTypes[zoneType] and data and type(data) == "table" then
-            ModData.add(name, data)
-        end
-    end
-end
-Events.OnReceiveGlobalModData.Add(zoneEditor.receiveGlobalModData)
 
 
 function zoneEditor:populateZoneList(selectedBackup)
@@ -220,12 +197,12 @@ function zoneEditor:populateZoneList(selectedBackup)
     local selected = self:getSelectedZoneType()
     if not selected then return end
 
-    if isClient() then ModData.request(selected.."_zones") end
-    self.zones = ModData.get(selected.."_zones")
+    sendClientCommand("zoneEditor", "loadZone", {zoneType=selected, disableRefresh=true})
+    zoneEditor.currentZone = zoneEditor.loadedZones[selected]
 
-    if self.zones then
+    if zoneEditor.currentZone then
         if selectedBackup then self.zoneList.selected = selectedBackup end
-        for i, zone in pairs(self.zones) do
+        for i, zone in pairs(zoneEditor.currentZone) do
 
             local label = "damaged zone"
             if zone and zone.coordinates and zone.coordinates.x1 then
@@ -320,10 +297,10 @@ end
 
 
 function zoneEditor:onEnterValueEntry()
-
     self:unfocus()
 
-    local zone = zoneEditor.instance.zoneList.items[zoneEditor.instance.zoneList.selected].item
+    local zoneSelected = zoneEditor.instance.zoneList.selected
+    local zone = zoneEditor.instance.zoneList.items[zoneSelected].item
     local parentParam
     local param = zone[zoneEditor.instance.zoneEditPanel.clickSelected]
 
@@ -353,16 +330,11 @@ function zoneEditor:onEnterValueEntry()
                 zone[zoneEditor.instance.zoneEditPanel.clickSelected] = nil
             end
         end
-
-        if parentParam then
-            zone[parentParam][newKey] = newValue
-        else
-            zone[newKey] = newValue
-        end
     end
 
     local zoneType = zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected)
-    sendClientCommand("zoneEditor", "sendZoneData", {zoneType=zoneType,zones=self.zones})
+    sendClientCommand("zoneEditor", "editZoneData", {zoneType=zoneType,zone=zoneSelected,parentParam=parentParam,newKey=newKey,newValue=newValue})
+
     zoneEditor.instance.zoneEditPanel.clickSelected = nil
     self:setVisible(false)
     zoneEditor.instance:populateZoneEditPanel()
@@ -486,8 +458,8 @@ function zoneEditor:prerender()
 
     local player = getPlayer()
 
-    if self.zones then
-        for i, zone in pairs(self.zones) do
+    if zoneEditor.currentZone then
+        for i, zone in pairs(zoneEditor.currentZone) do
             if zone and zone.coordinates and zone.coordinates.x1 then
                 local zoneW, zoneH = scale*(math.abs(zone.coordinates.x2-zone.coordinates.x1)/mapSizeX), scale*(math.abs(zone.coordinates.y2-zone.coordinates.y1)/mapSizeY)
                 local zoneX, zoneY = zoneMapX+scale*(zone.coordinates.x1/mapSizeX), zoneMapY+scale*(zone.coordinates.y1/mapSizeY)
@@ -513,9 +485,9 @@ end
 function zoneEditor:render()
     ISPanel.render(self)
     
-    if self.zones then
+    if zoneEditor.currentZone then
         local player = getPlayer()
-        for i, zone in pairs(self.zones) do
+        for i, zone in pairs(zoneEditor.currentZone) do
             if zone and zone.coordinates and zone.coordinates.x1 then
                 zoneEditor.highlightZone(zone.coordinates.x1,zone.coordinates.y1,zone.coordinates.x2,zone.coordinates.y2,player)
             end

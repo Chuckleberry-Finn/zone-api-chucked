@@ -1,27 +1,83 @@
+if not isClient() then require "zoneEditor" end
+
 local zoneEditorServer = {}
 
-function zoneEditorServer.receiveGlobalModData(name, data)
-    ModData.add(name, data)
-    ModData.transmit(name)
+function zoneEditorServer.pushUpdate(_player, zoneType, zones, disableRefresh)
+    if isServer() then
+        sendServerCommand(_player, "zoneEditor", "loadZone", {zoneType=zoneType, zones=zones, disableRefresh=disableRefresh})
+    else
+        zoneEditor.loadedZones[zoneType] = zones
+        if (not disableRefresh) and zoneEditor.instance then zoneEditor.instance.refresh = 1 end
+    end
 end
+
 
 function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
     if _module ~= "zoneEditor" then return end
     _data = _data or {}
 
-    --sendClientCommand("zoneEditor", "addZoneTypeToServer", {zoneTypes=})
-    if _command == "addZoneTypesToServer" then
-        for _,zoneType in pairs(_data.zoneTypes) do
-            ModData.getOrCreate(zoneType.."_zones")
-            ModData.transmit(zoneType.."_zones")
+    if _command == "loadAll" then
+        if isServer() then
+            local loadZones = _data.zoneTypes
+
+            local chamberedZones = {}
+
+            for zoneType,zoneData in pairs(loadZones) do
+                local modDataID = zoneType.."_zones"
+                chamberedZones[zoneType] = ModData.getOrCreate(modDataID)
+            end
+
+            if isServer() then
+                sendServerCommand(_player, "zoneEditor", "loadAll", {loadedZones=chamberedZones})
+            else
+                zoneEditor.loadedZones = chamberedZones
+            end
         end
     end
 
-    --sendClientCommand("zoneEditor", "sendZoneData", {zoneType=,zones=})
-    if _command == "sendZoneData" then
+    --sendClientCommand("zoneEditor", "loadZone", {zoneType=zoneType})
+    if _command == "loadZone" then
         local zoneType = _data.zoneType
-        ModData.add(zoneType.."_zones", _data.zones)
-        ModData.transmit(zoneType.."_zones")
+        local zones = ModData.getOrCreate(zoneType.."_zones")
+        local disableRefresh = _data.disableRefresh
+        zoneEditorServer.pushUpdate(_player, zoneType, zones, disableRefresh)
+    end
+
+
+    --sendClientCommand("zoneEditor", "addZone", {zoneType=selected, newZone=newZone})
+    if _command == "addZone" then
+        local zoneType = _data.zoneType
+        local zones = ModData.getOrCreate(zoneType.."_zones")
+        local newZone = _data.newZone
+
+        table.insert(zones, newZone)
+        zoneEditorServer.pushUpdate(_player, zoneType, zones)
+    end
+
+
+    --sendClientCommand("zoneEditor", "removeZone", {zoneType=selected,selected=self.zoneList.selected})
+    if _command == "removeZone" then
+        local zoneType = _data.zoneType
+        local zones = ModData.getOrCreate(zoneType.."_zones")
+        local remove = _data.selected
+
+        zones[remove] = nil
+        zoneEditorServer.pushUpdate(_player, zoneType, zones)
+    end
+
+    --sendClientCommand("zoneEditor", "editZoneData", {zoneType=zoneType,selected=zoneSelected,parentParam=parentParam,newKey=newKey,newValue=newValue})
+    if _command == "editZoneData" then
+
+        local zoneType = _data.zoneType
+        local zones = ModData.getOrCreate(zoneType.."_zones")
+        local selected = zones[_data.selected]
+        local parentParam = _data.parentParam
+        local newKey = _data.newKey
+        local newValue = _data.newValue
+        local modifying = parentParam and selected[parentParam] or selected
+        modifying[newKey] = newValue
+
+        zoneEditorServer.pushUpdate(_player, zoneType, zones, true)
     end
 end
 

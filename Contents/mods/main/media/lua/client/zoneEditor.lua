@@ -452,7 +452,7 @@ function zoneEditor:prerender()
     if self.refresh and self.refresh > 0 then
         self.refresh = self.refresh-1
         if self.refresh <= 0 then
-            self:populateZoneList()
+            self:populateZoneList(self.zoneList.selected)
         end
     end
 

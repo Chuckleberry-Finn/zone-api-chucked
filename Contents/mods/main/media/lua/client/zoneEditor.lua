@@ -7,7 +7,8 @@ zoneEditor.dataListName = {}
 
 
 function zoneEditor.requestZone(zoneID)
-    sendClientCommand("zoneEditor", "loadZone", {zoneType=zoneID, disableRefresh=true})
+    if not zoneEditor.loadedZones[zoneID] then sendClientCommand("zoneEditor", "loadZone", {zoneType=zoneID, disableRefresh=true}) end
+    return zoneEditor.loadedZones[zoneID]
 end
 
 
@@ -16,6 +17,7 @@ function zoneEditor.OnOpenPanel(obj, name)
 
     if zoneEditor.instance==nil then
         zoneEditor.instance = zoneEditor:new(100, 100, 650, 475, "Inspect")
+        sendClientCommand("zoneEditor", "loadAll", {zoneTypes=zoneEditor.zoneTypes})
         zoneEditor.instance:initialise()
         zoneEditor.instance:instantiate()
     end

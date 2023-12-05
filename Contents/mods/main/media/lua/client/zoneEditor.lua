@@ -333,7 +333,7 @@ function zoneEditor:onEnterValueEntry()
     end
 
     local zoneType = zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected)
-    sendClientCommand("zoneEditor", "editZoneData", {zoneType=zoneType,zone=zoneSelected,parentParam=parentParam,newKey=newKey,newValue=newValue})
+    sendClientCommand("zoneEditor", "editZoneData", {zoneType=zoneType,selected=zoneSelected,parentParam=parentParam,newKey=newKey,newValue=newValue})
 
     zoneEditor.instance.zoneEditPanel.clickSelected = nil
     self:setVisible(false)

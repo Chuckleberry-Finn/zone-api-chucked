@@ -302,9 +302,9 @@ function zoneEditor:onEnterValueEntry()
     self:unfocus()
 
     local zoneSelected = zoneEditor.instance.zoneList.selected
-    local zone = zoneEditor.instance.zoneList.items[zoneSelected].item
+    local zone = zoneEditor.instance.zoneList.items[zoneSelected] and zoneEditor.instance.zoneList.items[zoneSelected].item
     local parentParam
-    local param = zone[zoneEditor.instance.zoneEditPanel.clickSelected]
+    local param = zone and zone[zoneEditor.instance.zoneEditPanel.clickSelected]
 
     if not param then
         for zoneParam,value in pairs(zone) do

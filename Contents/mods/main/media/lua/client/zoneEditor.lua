@@ -68,8 +68,8 @@ end
 function zoneEditor:createChildren()
     ISPanel.createChildren(self)
 
-    self.header = ISDebugUtils.addLabel(self, 15, 8, "Zone Editor", UIFont.NewLarge, true, 0.9, 0.9, 0.9)
-    self.playerCoords = ISDebugUtils.addLabel(self, self.header.x+self.header.width+20, 8, "", UIFont.NewSmall, true, 0.8,0.8,0.8)
+    self.header = zoneEditor.addLabel(self, 15, 8, "Zone Editor", UIFont.NewLarge, true, 0.9, 0.9, 0.9)
+    self.playerCoords = zoneEditor.addLabel(self, self.header.x+self.header.width+20, 8, "", UIFont.NewSmall, true, 0.8,0.8,0.8)
 
     local comboWidth = self.width/3
     self.selectionComboBox = ISComboBox:new(self.width-comboWidth-8, 8, comboWidth, 22, self, self.onSelectZoneTypeChange)
@@ -378,6 +378,13 @@ end
 function zoneEditor:onEnterValueEntry()
     self:unfocus()
 
+    local newValue = self:getText()
+    if newValue == "" or newValue == nil then
+        zoneEditor.instance.zoneEditPanel.clickSelected = nil
+        self:setVisible(false)
+        return
+    end
+
     local zoneSelected = zoneEditor.instance.zoneList.selected
     local zone = zoneEditor.instance.zoneList.items[zoneSelected] and zoneEditor.instance.zoneList.items[zoneSelected].item
     local parentParam
@@ -398,10 +405,19 @@ function zoneEditor:onEnterValueEntry()
 
     local oldType = type(param)
     local newKey = zoneEditor.instance.zoneEditPanel.clickSelected
-    local newValue = self:getText()
 
     if oldType == "number" then newValue = tonumber(newValue) end
 
+    if newValue == "true" then newValue = true end
+    if newValue == "false" then newValue = false end
+
+    if newValue == "" or newValue == nil then
+        zoneEditor.instance.zoneEditPanel.clickSelected = nil
+        self:setVisible(false)
+        return
+    end
+
+    --[[
     if newValue and newValue~="" then
         if zoneEditor.instance.zoneEditPanel.clickSelected ~= newKey then
             if parentParam then
@@ -411,6 +427,7 @@ function zoneEditor:onEnterValueEntry()
             end
         end
     end
+    --]]
 
     local zoneType = zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected)
     sendClientCommand("zoneEditor", "editZoneData", {zoneType=zoneType,selected=zoneSelected,parentParam=parentParam,newKey=newKey,newValue=newValue})

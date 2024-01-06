@@ -7,6 +7,7 @@ function zoneEditorServer.getModData(ID)
         return zoneEditorServer.loadedZones[ID]
     else
         zoneEditor.loadedZones[ID] = zoneEditor.loadedZones[ID] or ModData.getOrCreate(ID.."_zones")
+        zoneEditorServer.loadedZones[ID] = zoneEditor.loadedZones[ID]
         return zoneEditor.loadedZones[ID]
     end
 end

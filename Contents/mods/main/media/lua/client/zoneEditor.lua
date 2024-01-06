@@ -403,28 +403,18 @@ function zoneEditor:onEnterValueEntry()
         end
     end
 
-    local oldType = type(param)
+    local oldType = (param=="true" or param=="false") and "%BOOL%" or type(param)
     local newKey = zoneEditor.instance.zoneEditPanel.clickSelected
 
     if oldType == "number" then newValue = tonumber(newValue) end
+    if oldType == "%BOOL%" and newValue~="true" and newValue~="false" then newValue = nil end
+    if oldType ~= "%BOOL%" and (newValue=="true" or newValue=="false") then newValue = nil end
 
     if newValue == "" or newValue == nil then
         zoneEditor.instance.zoneEditPanel.clickSelected = nil
         self:setVisible(false)
         return
     end
-
-    --[[
-    if newValue and newValue~="" then
-        if zoneEditor.instance.zoneEditPanel.clickSelected ~= newKey then
-            if parentParam then
-                zone[parentParam][zoneEditor.instance.zoneEditPanel.clickSelected] = nil
-            else
-                zone[zoneEditor.instance.zoneEditPanel.clickSelected] = nil
-            end
-        end
-    end
-    --]]
 
     local zoneType = zoneEditor.instance.selectionComboBox:getOptionData(zoneEditor.instance.selectionComboBox.selected)
     sendClientCommand("zoneEditor", "editZoneData", {zoneType=zoneType,selected=zoneSelected,parentParam=parentParam,newKey=newKey,newValue=newValue})

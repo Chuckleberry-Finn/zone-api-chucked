@@ -2,8 +2,13 @@ local zoneEditorServer = {}
 
 zoneEditorServer.loadedZones = {}
 function zoneEditorServer.getModData(ID)
-    zoneEditorServer.loadedZones[ID] = zoneEditorServer.loadedZones[ID] or ModData.getOrCreate(ID.."_zones")
-    return zoneEditorServer.loadedZones[ID]
+    if isServer() then
+        zoneEditorServer.loadedZones[ID] = zoneEditorServer.loadedZones[ID] or ModData.getOrCreate(ID.."_zones")
+        return zoneEditorServer.loadedZones[ID]
+    else
+        zoneEditor.loadedZones[ID] = zoneEditor.loadedZones[ID] or ModData.getOrCreate(ID.."_zones")
+        return zoneEditor.loadedZones[ID]
+    end
 end
 
 

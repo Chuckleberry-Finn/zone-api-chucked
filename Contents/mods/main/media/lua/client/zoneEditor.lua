@@ -408,9 +408,6 @@ function zoneEditor:onEnterValueEntry()
 
     if oldType == "number" then newValue = tonumber(newValue) end
 
-    if newValue == "true" then newValue = true end
-    if newValue == "false" then newValue = false end
-
     if newValue == "" or newValue == nil then
         zoneEditor.instance.zoneEditPanel.clickSelected = nil
         self:setVisible(false)

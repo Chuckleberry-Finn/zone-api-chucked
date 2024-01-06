@@ -286,7 +286,9 @@ function zoneEditor:populateZoneList(selectedBackup)
         if selectedBackup then self.zoneList.selected = selectedBackup end
         for i, zone in pairs(zoneEditor.currentZone) do
             local label = zone and zone.name or zone.coordinates
-                    and "x1:"..zone.coordinates.x1..", y1:"..zone.coordinates.y1..", x2:"..zone.coordinates.x2..", y2:"..zone.coordinates.y2 or "damaged zone"
+                    and zone.coordinates.x1 and zone.coordinates.x2 and zone.coordinates.y1 and zone.coordinates.y2
+                    and "x1:"..zone.coordinates.x1..", y1:"..zone.coordinates.y1..", x2:"..zone.coordinates.x2..", y2:"..zone.coordinates.y2
+                    or "damaged zone"
             self.zoneList:addItem(label, zone)
         end
         self:populateZoneEditPanel()
@@ -489,6 +491,7 @@ end
 
 ---@param playerObj IsoGameCharacter|IsoPlayer|IsoObject|IsoMovingObject
 function zoneEditor.highlightZone(x1,y1,x2,y2,playerObj)
+    if not x1 or not y1 or not x2 or not y2 or not playerObj then return end
 
     for xVal = x1, x2 do
         local yVal1 = y1

@@ -259,7 +259,8 @@ end
 
 
 function zoneEditor:OnZoneListMouseDown(item)
-    zoneEditor.instance:populateZoneEditPanel()
+    local zone = self.zoneList.items and self.zoneList.items[self.zoneList.selected] and self.zoneList.items[self.zoneList.selected].item
+    zoneEditor.instance:populateZoneEditPanel(zone)
 end
 
 
@@ -280,6 +281,7 @@ function zoneEditor:populateZoneList(selectedBackup)
     if not selected then return end
 
     sendClientCommand("zoneEditor", "loadZone", {zoneType=selected, disableRefresh=true})
+
     zoneEditor.currentZone = zoneEditor.loadedZones[selected]
 
     if zoneEditor.currentZone then
@@ -296,7 +298,7 @@ function zoneEditor:populateZoneList(selectedBackup)
 end
 
 
-function zoneEditor:populateZoneEditPanel()
+function zoneEditor:populateZoneEditPanel(oldZone)
 
     local zone = self.zoneList.items and self.zoneList.items[self.zoneList.selected] and self.zoneList.items[self.zoneList.selected].item
     if zone then
@@ -477,41 +479,65 @@ function zoneEditor:onMouseWheel(del)
 end
 
 
----@param square IsoGridSquare
-function zoneEditor.highlightSquare(square, player)
-    ---@type IsoObject
-    local sqFloor = square and square:getFloor()
-    if not sqFloor then return end
-    local tooFar = (math.abs(player:getX()-sqFloor:getX())>55) or (math.abs(player:getX()-sqFloor:getX())>55)
-    if tooFar then return end
-    sqFloor:setHighlighted(true)
-    sqFloor:setHighlightColor(1,0,0,1)
+zoneEditor.highLights = {}
+zoneEditor.highLightedZone = {x1=-1,y1=-1,x2=-1,y2=-1}
+---CREDIT: Bambino (_bambino)
+function zoneEditor.processZoneHighlight(zone)
+    if not zone or not zone.coordinates or zone.coordinates.x1 < 0 or zone.coordinates.x2 < 0 or zone.coordinates.y1 < 0 or zone.coordinates.y2 < 0 then
+        zoneEditor.clearZoneHighlight()
+        return
+    end
+
+    if zone.coordinates.x1 == zoneEditor.highLightedZone.x1 and zone.coordinates.x2 == zoneEditor.highLightedZone.x2
+            and zone.coordinates.y1 == zoneEditor.highLightedZone.y1 and zone.coordinates.y2 == zoneEditor.highLightedZone.y2 then
+        return
+    end
+    zoneEditor.highLightedZone = {x1=zone.coordinates.x1,y1=zone.coordinates.y1,x2=zone.coordinates.x2,y2=zone.coordinates.y2}
+
+    local zoneX1 = math.min(zone.coordinates.x1, zone.coordinates.x2)
+    local zoneX2 = math.max(zone.coordinates.x1, zone.coordinates.x2)
+    local zoneY1 = math.min(zone.coordinates.y1, zone.coordinates.y2)
+    local zoneY2 = math.max(zone.coordinates.y1, zone.coordinates.y2)
+
+    local definitiveTiles = {}
+
+    for x = zoneX1, zoneX2 do
+        for y = zoneY1, zoneY2 do
+            local sq = getSquare(x, y, 0)
+            if sq then
+                zoneEditor.highlightSquare(sq, x, y)
+                definitiveTiles[x] = definitiveTiles[x] or {}
+                definitiveTiles[x][y] = true
+            end
+        end
+    end
+    zoneEditor.clearZoneHighlight(definitiveTiles)
 end
 
 
----@param playerObj IsoGameCharacter|IsoPlayer|IsoObject|IsoMovingObject
-function zoneEditor.highlightZone(x1,y1,x2,y2,playerObj)
-    if not x1 or not y1 or not x2 or not y2 or not playerObj then return end
-
-    for xVal = x1, x2 do
-        local yVal1 = y1
-        local yVal2 = y2
-        local square1 = getSquare(xVal,yVal1,0)
-        zoneEditor.highlightSquare(square1, playerObj)
-        local square2 = getSquare(xVal,yVal2,0)
-        zoneEditor.highlightSquare(square2, playerObj)
-
+function zoneEditor.clearZoneHighlight(definitiveTiles)
+    if not zoneEditor.highLights then return end
+    for x,ys in pairs(zoneEditor.highLights) do
+        for y, marker in pairs(ys) do
+            if not definitiveTiles or not definitiveTiles[x] or not definitiveTiles[x][y] then
+                if zoneEditor.highLights[x][y] then
+                    marker:remove()
+                    zoneEditor.highLights[x][y] = nil
+                end
+            end
+        end
     end
+    zoneEditor.highLightedZone = {}
+end
 
-    for yVal = y1, y2 do
-        local xVal1 = x1
-        local xVal2 = x2
-        local square1 = getSquare(xVal1,yVal,0)
-        zoneEditor.highlightSquare(square1, playerObj)
-        local square2 = getSquare(xVal2,yVal,0)
-        zoneEditor.highlightSquare(square2, playerObj)
+
+function zoneEditor.highlightSquare(sq, x, y)
+    if not zoneEditor.highLights[x] then zoneEditor.highLights[x] = {} end
+    if not zoneEditor.highLights[x][y] then
+        zoneEditor.highLights[x][y] = getWorldMarkers():addGridSquareMarker("square_center", nil, sq, 1, 0, 0, false, 1.0)
     end
 end
+
 
 
 function zoneEditor:prerender()
@@ -548,8 +574,14 @@ function zoneEditor:prerender()
     if zoneEditor.currentZone then
         for i, zone in pairs(zoneEditor.currentZone) do
             if zone and zone.coordinates and zone.coordinates.x1 then
-                local zoneW, zoneH = scale*(math.abs(zone.coordinates.x2-zone.coordinates.x1)/mapSizeX), scale*(math.abs(zone.coordinates.y2-zone.coordinates.y1)/mapSizeY)
-                local zoneX, zoneY = zoneMapX+scale*(zone.coordinates.x1/mapSizeX), zoneMapY+scale*(zone.coordinates.y1/mapSizeY)
+
+                local zoneX1 = math.min(zone.coordinates.x1, zone.coordinates.x2)
+                local zoneX2 = math.max(zone.coordinates.x1, zone.coordinates.x2)
+                local zoneY1 = math.min(zone.coordinates.y1, zone.coordinates.y2)
+                local zoneY2 = math.max(zone.coordinates.y1, zone.coordinates.y2)
+
+                local zoneW, zoneH = scale*((zoneX2-zoneX1)/mapSizeX), scale*((zoneY2-zoneY1)/mapSizeY)
+                local zoneX, zoneY = zoneMapX+scale*(zoneX1/mapSizeX), zoneMapY+scale*(zoneY1/mapSizeY)
 
                 self:drawRect(zoneX, zoneY, math.max(1,zoneW), math.max(1,zoneH), 0.5, 1, 0, 0)
 
@@ -570,25 +602,19 @@ end
 
 
 function zoneEditor:render()
+    local zone = self.zoneList.items and self.zoneList.items[self.zoneList.selected] and self.zoneList.items[self.zoneList.selected].item
+    zoneEditor.processZoneHighlight(zone)
+
     ISPanel.render(self)
-    
-    if zoneEditor.currentZone then
-        local player = getPlayer()
-        for i, zone in pairs(zoneEditor.currentZone) do
-            if zone and zone.coordinates and zone.coordinates.x1 then
-                zoneEditor.highlightZone(zone.coordinates.x1,zone.coordinates.y1,zone.coordinates.x2,zone.coordinates.y2,player)
-            end
-        end
-    end
 end
 
-function zoneEditor:update()
-    ISPanel.update(self)
-end
+
+function zoneEditor:update() ISPanel.update(self) end
 
 
 function zoneEditor:close()
     self:setVisible(false)
+    zoneEditor.clearZoneHighlight()
     self:removeFromUIManager()
 end
 

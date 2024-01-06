@@ -527,7 +527,7 @@ function zoneEditor.clearZoneHighlight(definitiveTiles)
             end
         end
     end
-    zoneEditor.highLightedZone = {}
+    if not definitiveTiles then zoneEditor.highLightedZone = {} end
 end
 
 

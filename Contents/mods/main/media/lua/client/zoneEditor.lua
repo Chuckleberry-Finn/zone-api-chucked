@@ -55,15 +55,21 @@ function zoneEditor:populateSelectionComboBoxComboList()
     if (not self.selectionComboBox.selected) or (self.selectionComboBox.selected > #self.selectionComboBox.options) then self.selectionComboBox.selected = 1 end
 end
 
+function zoneEditor.addLabel(_self, _x, _y, _title, _font, _r, _g, _b, _a, _bLeft)
+    local FONT_HGT = getTextManager():getFontHeight(_font)
+    local label = ISLabel:new(_x, _y, FONT_HGT, _title, 1, 1, 1, 1.0, _font, _bLeft==nil and true or _bLeft)
+    label:initialise()
+    label:instantiate()
+    _self:addChild(label)
+    return label
+end
+
 
 function zoneEditor:createChildren()
     ISPanel.createChildren(self)
 
-    self.junk, self.header = ISDebugUtils.addLabel(self, {}, 15, 8, "Zone Editor", UIFont.Large, true)
-    self.header:setColor(0.9,0.9,0.9)
-
-    self.junk, self.playerCoords = ISDebugUtils.addLabel(self, {}, self.header.x+self.header.width+20, 8, "", UIFont.Small, true)
-    self.header:setColor(0.8,0.8,0.8)
+    self.header = ISDebugUtils.addLabel(self, 15, 8, "Zone Editor", UIFont.NewLarge, true, 0.9, 0.9, 0.9)
+    self.playerCoords = ISDebugUtils.addLabel(self, self.header.x+self.header.width+20, 8, "", UIFont.NewSmall, true, 0.8,0.8,0.8)
 
     local comboWidth = self.width/3
     self.selectionComboBox = ISComboBox:new(self.width-comboWidth-8, 8, comboWidth, 22, self, self.onSelectZoneTypeChange)

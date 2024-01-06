@@ -1,5 +1,3 @@
-if not isClient() then require "zoneEditor" end
-
 local zoneEditorServer = {}
 
 zoneEditorServer.loadedZones = {}

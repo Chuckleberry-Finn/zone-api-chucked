@@ -1,0 +1,6 @@
+[ 1/5/24 ]
+
+- Under the hood tweaks/refactors.
+- Fix: Edge cases with UI breaking.
+- Update: Added import/export feature.
+- Added: New name field for zones. (Can be added to old zones using import/export.)

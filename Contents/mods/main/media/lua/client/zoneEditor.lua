@@ -126,7 +126,81 @@ function zoneEditor:createChildren()
     self.removeZoneButton = button
     self.removeZoneButton:setVisible(false)
 
+    local importExportW = 22
+    local importX = self.selectionComboBox.x-importExportW-buttonPad
+
+    self.importButton = ISButton:new(importX,self.selectionComboBox.y, importExportW,22, ">", self, zoneEditor.onClickImport)
+    self.importButton.tooltip = getText("IGUI_IMPORT_ZONE")
+    self.importButton:initialise()
+    self.importButton:instantiate()
+    self:addChild(self.importButton)
+
+    self.exportButton = ISButton:new(importX-importExportW-buttonPad,self.selectionComboBox.y, importExportW,22, "<", self, zoneEditor.onClickExport)
+    self.exportButton.tooltip = getText("IGUI_EXPORT_ZONE")
+    self.exportButton:initialise()
+    self.exportButton:instantiate()
+    self:addChild(self.exportButton)
+
     self.scrollingZoom = 100
+end
+
+
+function zoneEditor.tableToString(object,nesting)
+    nesting = nesting or 0
+    local indent = "    "
+    local text = ""..string.rep(indent, nesting)
+    if type(object) == 'table' then
+        local s = "{\n"
+        for k,v in pairs(object) do
+            s = s..string.rep(indent, nesting+1).."\[\""..k.."\"\] = "..zoneEditor.tableToString(v,nesting+1)..",\n"
+        end
+        text = s..string.rep(indent, nesting).."}"
+    else
+        if type(object) == "string" then text = "\""..tostring(object).."\""
+        else text = tostring(object)
+        end
+    end
+    return text
+end
+
+function zoneEditor.stringToTable(inputString)
+    local tblString = inputString and loadstring(("return "..inputString))
+    local tblTable = tblString and tblString()
+    return tblTable
+end
+
+
+function zoneEditor:onClickImport()
+    local zoneType = self:getSelectedZoneType()
+    local reader = getFileReader("exportedZones_"..zoneType..".txt", false)
+    if not reader then return end
+    local lines = {}
+    local line = reader:readLine()
+    while line do
+        table.insert(lines, line)
+        line = reader:readLine()
+    end
+    reader:close()
+
+    local totalStr = table.concat(lines, "\n")
+    local tbl = zoneEditor.stringToTable(totalStr)
+    if (not tbl) or (type(tbl)~="table") then
+        print("ERROR: ZONE IMPORT FAILED.")
+        return
+    end
+    sendClientCommand("zoneEditor", "importZoneData", {zoneType=zoneType,zones=tbl})
+end
+
+
+function zoneEditor:onClickExport()
+    local cacheDir = Core.getMyDocumentFolder()..getFileSeparator().."Lua"..getFileSeparator().."exportedZones_"..self:getSelectedZoneType()..".txt"
+    local zones = zoneEditor.loadedZones[self:getSelectedZoneType()]
+    local exported = zoneEditor.tableToString(zones)
+    local writer = getFileWriter("exportedZones_"..self:getSelectedZoneType()..".txt", true, false)
+    writer:write(exported)
+    writer:close()
+    if isDesktopOpenSupported() then showFolderInDesktop(cacheDir)
+    else openUrl(cacheDir) end
 end
 
 
@@ -205,11 +279,8 @@ function zoneEditor:populateZoneList(selectedBackup)
     if zoneEditor.currentZone then
         if selectedBackup then self.zoneList.selected = selectedBackup end
         for i, zone in pairs(zoneEditor.currentZone) do
-
-            local label = "damaged zone"
-            if zone and zone.coordinates and zone.coordinates.x1 then
-                label = "x1:"..zone.coordinates.x1..", y1:"..zone.coordinates.y1..", x2:"..zone.coordinates.x2..", y2:"..zone.coordinates.y2
-            end
+            local label = zone and zone.name or zone.coordinates
+                    and "x1:"..zone.coordinates.x1..", y1:"..zone.coordinates.y1..", x2:"..zone.coordinates.x2..", y2:"..zone.coordinates.y2 or "damaged zone"
             self.zoneList:addItem(label, zone)
         end
         self:populateZoneEditPanel()
@@ -305,6 +376,7 @@ function zoneEditor:onEnterValueEntry()
     local zone = zoneEditor.instance.zoneList.items[zoneSelected] and zoneEditor.instance.zoneList.items[zoneSelected].item
     local parentParam
     local param = zone and zone[zoneEditor.instance.zoneEditPanel.clickSelected]
+    if not zone then return end
 
     if not param then
         for zoneParam,value in pairs(zone) do

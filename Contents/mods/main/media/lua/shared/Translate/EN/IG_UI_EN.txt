@@ -1,0 +1,4 @@
+IGUI_EN = {
+    IGUI_IMPORT_ZONE = "Import. Use this after selecting export to load the local text file into the current zones.",
+    IGUI_EXPORT_ZONE = "Export. Select this to open a local text file, modifying that file will not modify the zones in game, use import to apply changes.",
+}

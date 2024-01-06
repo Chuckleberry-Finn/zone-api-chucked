@@ -46,6 +46,7 @@ function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
     if _command == "loadZone" then
         local zoneType = _data.zoneType
         local zones = zoneEditorServer.getModData(zoneType)
+
         local disableRefresh = _data.disableRefresh
         zoneEditorServer.pushUpdate(zoneType, zones, disableRefresh)
     end
@@ -72,17 +73,25 @@ function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
 
     --sendClientCommand("zoneEditor", "editZoneData", {zoneType=zoneType,selected=zoneSelected,parentParam=parentParam,newKey=newKey,newValue=newValue})
     if _command == "editZoneData" then
-
         local zoneType = _data.zoneType
         local zones = zoneEditorServer.getModData(zoneType)
         local dataSelected = _data.selected
-        local selected = zones[_data.selected]
+        local selectedZone = zones[dataSelected]
         local parentParam = _data.parentParam
         local newKey = _data.newKey
         local newValue = _data.newValue
-        local modifying = parentParam and selected[parentParam] or selected
+        local modifying = parentParam and selectedZone[parentParam] or selectedZone
         modifying[newKey] = newValue
 
+        zoneEditorServer.pushUpdate(zoneType, zones)
+    end
+
+    --"importZoneData", {zoneType=zoneType,zones=totalStr})
+    if _command == "importZoneData" then
+        local zoneType = _data.zoneType
+        local newZones = _data.zones
+        local zones = zoneEditorServer.getModData(zoneType)
+        zones = newZones
         zoneEditorServer.pushUpdate(zoneType, zones)
     end
 end

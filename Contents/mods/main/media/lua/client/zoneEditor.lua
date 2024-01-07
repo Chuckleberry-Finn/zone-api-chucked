@@ -501,6 +501,47 @@ function zoneEditor.processZoneHighlight(zone)
 
     local definitiveTiles = {}
 
+    for xVal = zoneX1, zoneX2 do
+
+        local yVal1 = zoneY1
+        local square1 = getSquare(xVal,yVal1,0)
+        if square1 then
+            zoneEditor.highlightSquare(square1, xVal, yVal1)
+            definitiveTiles[xVal] = definitiveTiles[xVal] or {}
+            definitiveTiles[xVal][yVal1] = true
+        end
+
+        local yVal2 = zoneY2
+        local square2 = getSquare(xVal,yVal2,0)
+        if square2 then
+            zoneEditor.highlightSquare(square2, xVal, yVal2)
+            definitiveTiles[xVal] = definitiveTiles[xVal] or {}
+            definitiveTiles[xVal][yVal2] = true
+        end
+
+    end
+
+    for yVal = zoneY1, zoneY2 do
+
+        local xVal1 = zoneX1
+        local square1 = getSquare(xVal1, yVal, 0)
+        if square1 then
+            zoneEditor.highlightSquare(square1, xVal1, yVal)
+            definitiveTiles[xVal1] = definitiveTiles[xVal1] or {}
+            definitiveTiles[xVal1][yVal] = true
+        end
+
+        local xVal2 = zoneX2
+        local square2 = getSquare(xVal2, yVal, 0)
+        if square2 then
+            zoneEditor.highlightSquare(square2, xVal2, yVal)
+            definitiveTiles[xVal2] = definitiveTiles[xVal2] or {}
+            definitiveTiles[xVal2][yVal] = true
+        end
+
+    end
+
+    --[[
     for x = zoneX1, zoneX2 do
         for y = zoneY1, zoneY2 do
             local sq = getSquare(x, y, 0)
@@ -511,6 +552,8 @@ function zoneEditor.processZoneHighlight(zone)
             end
         end
     end
+    --]]
+
     zoneEditor.clearZoneHighlight(definitiveTiles)
 end
 

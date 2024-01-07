@@ -5,3 +5,7 @@
 - Added: New name field for zones. (Can be added to old zones using import/export.)
 - Remade zone highlighting on the map. Credit: Bambino.
 [ ------ ]
+
+[ 1/6/24 ]
+- Highlight is border only (for now) again.
+[ ------ ]

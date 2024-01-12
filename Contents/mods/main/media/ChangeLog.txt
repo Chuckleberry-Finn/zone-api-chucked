@@ -9,3 +9,7 @@
 [ 1/6/24 ]
 - Highlight is border only (for now) again.
 [ ------ ]
+
+[ 1/11/24 ]
+- Fix: edge case with editor.
+[ ------ ]

@@ -84,6 +84,7 @@ function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
         local parentParam = _data.parentParam
         local newKey = _data.newKey
         local newValue = _data.newValue
+        if not selectedZone then print("ERROR: selectedZone not found.") return end
         local modifying = parentParam and selectedZone[parentParam] or selectedZone
         modifying[newKey] = newValue
 

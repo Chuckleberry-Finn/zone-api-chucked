@@ -16,7 +16,8 @@ function zoneEditor.OnOpenPanel(obj, name)
     if not isAdmin() and not isCoopHost() and not getDebug() then return end
 
     if zoneEditor.instance==nil then
-        zoneEditor.instance = zoneEditor:new(100, 100, 650, 475, "Inspect")
+        local fontSizeAdjustment = 1 + (getCore():getOptionFontSize() * 0.15)
+        zoneEditor.instance = zoneEditor:new(100, 100, 650*fontSizeAdjustment, 475*fontSizeAdjustment, "Inspect")
         sendClientCommand("zoneEditor", "loadAll", {zoneTypes=zoneEditor.zoneTypes})
         zoneEditor.instance:initialise()
         zoneEditor.instance:instantiate()
@@ -68,8 +69,8 @@ end
 function zoneEditor:createChildren()
     ISPanel.createChildren(self)
 
-    self.header = zoneEditor.addLabel(self, 15, 8, "Zone Editor", UIFont.NewLarge, true, 0.9, 0.9, 0.9)
-    self.playerCoords = zoneEditor.addLabel(self, self.header.x+self.header.width+20, 8, "", UIFont.NewSmall, true, 0.8,0.8,0.8)
+    self.header = zoneEditor.addLabel(self, 15, 8, "Zone Editor", UIFont.Large, true, 0.9, 0.9, 0.9)
+    self.playerCoords = zoneEditor.addLabel(self, self.header.x+self.header.width+20, 8, "", UIFont.Small, true, 0.8,0.8,0.8)
 
     local comboWidth = self.width/3
     self.selectionComboBox = ISComboBox:new(self.width-comboWidth-8, 8, comboWidth, 22, self, self.onSelectZoneTypeChange)
@@ -82,12 +83,14 @@ function zoneEditor:createChildren()
     local zoneListWidth = self.width-400
     local zoneListHeight = self.width-zoneListWidth-20
 
+    local fontSizeAdjustment = 1 + (getCore():getOptionFontSize() * 0.15)
+
     self.zoneList = ISScrollingListBox:new(10, 40, zoneListWidth, zoneListHeight)
     self.zoneList:initialise()
     self.zoneList:instantiate()
-    self.zoneList.itemheight = 22
+    self.zoneList.itemheight = 22 * fontSizeAdjustment
     self.zoneList.joypadParent = self
-    self.zoneList.font = UIFont.NewSmall
+    self.zoneList.font = UIFont.Small
     self.zoneList.doDrawItem = self.drawZoneList
     self.zoneList.drawBorder = true
     self.zoneList.onmousedown = zoneEditor.OnZoneListMouseDown
@@ -97,9 +100,9 @@ function zoneEditor:createChildren()
     self.zoneEditPanel = ISScrollingListBox:new(self.zoneList.x+5, self.zoneList.y, zoneListWidth-10, 20)
     self.zoneEditPanel:initialise()
     self.zoneEditPanel:instantiate()
-    self.zoneEditPanel.itemheight = 20
+    self.zoneEditPanel.itemheight = 20 * fontSizeAdjustment
     self.zoneEditPanel.joypadParent = self
-    self.zoneEditPanel.font = UIFont.NewSmall
+    self.zoneEditPanel.font = UIFont.Small
     self.zoneEditPanel.doDrawItem = self.drawZoneEditPanel
     self.zoneEditPanel.drawBorder = false
     self.zoneEditPanel.onmousedown = zoneEditor.OnZoneEditPanelMouseDown
@@ -111,7 +114,7 @@ function zoneEditor:createChildren()
     self.editValueEntry = ISTextEntryBox:new("", self.zoneEditPanel.x, 0, self.zoneEditPanel.width, self.zoneEditPanel.itemheight)
     self.editValueEntry:initialise()
     self.editValueEntry:instantiate()
-    self.editValueEntry.font = UIFont.NewSmall
+    self.editValueEntry.font = UIFont.Small
     self.editValueEntry.borderColor = { r = 0.5, g = 0.5, b = 0.5, a = 0.5 }
     self.editValueEntry.onCommandEntered = self.onEnterValueEntry
     self:addChild(self.editValueEntry)

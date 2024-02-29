@@ -698,7 +698,10 @@ function ISAdminPanelUI:create()
     local btnHgt = math.max(25, fontHeight + 3 * 2)
     local btnGapY = 5
 
-    self.showZoneEditor = ISButton:new(self.showStatisticsBtn.x, self.showStatisticsBtn.y+btnHgt+btnGapY, btnWid, btnHgt, "Zone Editor", self, zoneEditor.OnOpenPanel)
+    local lastButton = self.children[self.IDMax-1]
+    lastButton = lastButton.internal == "CANCEL" and self.children[self.IDMax-2] or lastButton
+    
+    self.showZoneEditor = ISButton:new(lastButton.x, lastButton.y+btnHgt+btnGapY, btnWid, btnHgt, "Zone Editor", self, zoneEditor.OnOpenPanel)
     self.showZoneEditor.internal = ""
     self.showZoneEditor:initialise()
     self.showZoneEditor:instantiate()

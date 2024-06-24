@@ -1,15 +1,15 @@
 local zoneEditorServer = {}
 
-zoneEditorServer.loadedZones = {}
+
 function zoneEditorServer.getModData(ID)
-    if isServer() then
-        zoneEditorServer.loadedZones[ID] = zoneEditorServer.loadedZones[ID] or ModData.getOrCreate(ID.."_zones")
-        return zoneEditorServer.loadedZones[ID]
-    else
-        zoneEditor.loadedZones[ID] = zoneEditor.loadedZones[ID] or ModData.getOrCreate(ID.."_zones")
-        zoneEditorServer.loadedZones[ID] = zoneEditor.loadedZones[ID]
-        return zoneEditor.loadedZones[ID]
+
+    local loadZones = ModData.getOrCreate(ID.."_zones")
+
+    if not isServer() then
+        zoneEditor.loadedZones[ID] = loadZones
     end
+
+    return loadZones
 end
 
 
@@ -17,7 +17,6 @@ function zoneEditorServer.pushUpdate(zoneType, zones, disableRefresh)
     if isServer() then
         sendServerCommand("zoneEditor", "loadZone", {zoneType=zoneType, zones=zones, disableRefresh=disableRefresh})
     else
-        zoneEditorServer.loadedZones[zoneType] = zones
         zoneEditor.loadedZones[zoneType] = zones
         if (not disableRefresh) and zoneEditor.instance then zoneEditor.instance.refresh = 1 end
     end
@@ -94,9 +93,13 @@ function zoneEditorServer.onClientCommand(_module, _command, _player, _data)
     --"importZoneData", {zoneType=zoneType,zones=totalStr})
     if _command == "importZoneData" then
         local zoneType = _data.zoneType
+
         local newZones = _data.zones
         local zones = zoneEditorServer.getModData(zoneType)
-        zones = newZones
+
+        for i=#zones, #newZones+1, -1 do table.remove(zones, i) end
+        for _,newZone in pairs(newZones) do table.insert(zones, newZone) end
+
         zoneEditorServer.pushUpdate(zoneType, zones)
     end
 end

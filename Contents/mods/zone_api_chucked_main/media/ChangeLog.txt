@@ -1,0 +1,23 @@
+[ 1/6/24 ]
+- Under the hood tweaks/refactors.
+- Fix: Edge cases with UI breaking.
+- Update: Added import/export feature.
+- Added: New name field for zones. (Can be added to old zones using import/export.)
+- Remade zone highlighting on the map. Credit: Bambino.
+[ ------ ]
+
+[ 1/6/24 ]
+- Highlight is border only (for now) again.
+[ ------ ]
+
+[ 1/11/24 ]
+- Fix: edge case with editor.
+[ ------ ]
+[ 11/1/26 ]
+- Build 42 support (Contents/mods/main/42 + common). Build 41 files left in place.
+- Zone editing moved into the vanilla Admin Panel > Zone Editor: drag to draw, drag corners/edges to resize, centre handle to move.
+- Vanilla map zones can be shown on the map and used as bounds for new zones.
+- Server now checks the editor role capability (zone type .capability, default CanSetupNonPVPZone).
+- Zone types can be registered from shared/ so the server knows them.
+- requestZone no longer re-sends a request every call while waiting.
+[ ------ ]

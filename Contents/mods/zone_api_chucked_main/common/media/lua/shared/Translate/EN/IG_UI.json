@@ -1,0 +1,22 @@
+{
+    "IGUI_IMPORT_ZONE": "Import. Use this after selecting export to load the local text file into the current zones.",
+    "IGUI_EXPORT_ZONE": "Export. Select this to open a local text file, modifying that file will not modify the zones in game, use import to apply changes.",
+    "IGUI_ZoneAPI_Mode": "Zones: %1",
+    "IGUI_ZoneAPI_AddZone_Tooltip": "Click then drag on the map to draw a new zone.",
+    "IGUI_ZoneAPI_Duplicate": "Duplicate",
+    "IGUI_ZoneAPI_Export": "Export",
+    "IGUI_ZoneAPI_Import": "Import",
+    "IGUI_ZoneAPI_Snap_Square": "Snap: Square",
+    "IGUI_ZoneAPI_Snap_Chunk": "Snap: Chunk",
+    "IGUI_ZoneAPI_Snap_Cell": "Snap: Cell",
+    "IGUI_ZoneAPI_VanillaZones": "Vanilla Zones (%1/%2)",
+    "IGUI_ZoneAPI_Vanilla_All": "All",
+    "IGUI_ZoneAPI_VanillaHere": "Vanilla",
+    "IGUI_ZoneAPI_ZoomInVanilla": "Zoom in to see vanilla zones.",
+    "IGUI_ZoneAPI_Unplaced": "(not placed)",
+    "IGUI_ZoneAPI_EditValue": "Value for %1:",
+    "IGUI_ZoneAPI_DoubleClickEdit": "Double-click a value to edit it.",
+    "IGUI_ZoneAPI_SelectZone": "Select a zone in the list or click one on the map.",
+    "IGUI_ZoneAPI_Hint_Draw": "Click and drag to draw the zone. Right-click / Esc to cancel.",
+    "IGUI_ZoneAPI_Hint_Selected": "Drag corners/edges to resize, the centre square to move. Del removes."
+}

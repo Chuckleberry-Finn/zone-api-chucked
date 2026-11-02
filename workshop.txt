@@ -16,5 +16,5 @@ description=[b][i][h1] [/h1][/i][/b]
 description=
 description=
 description=[h3]Copyright 2026 Chuckleberry Finn. This item is not authorized for posting on Steam, except under the Steam account named Chuckleberry Finn.[/h3]
-tags=Build 41;Framework;Multiplayer
+tags=Build 41;Build 42;Framework;Multiplayer
 visibility=public

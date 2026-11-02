@@ -1,0 +1,8 @@
+id=ZoneAPIChucked
+name=Zone API Chucked
+description=An API (utility mod) that allows modders to make use of 'zones' that admins can modify on the fly.
+poster=poster.png
+icon=icon.png
+author=Chuckleberry Finn
+versionMin=42.20
+require=\ChuckleberryFinnAlertSystem,\errorMagnifier,
